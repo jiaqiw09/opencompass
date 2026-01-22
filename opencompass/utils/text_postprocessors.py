@@ -2,7 +2,7 @@ import re
 from typing import Callable, Optional, Union
 
 from opencompass.registry import TEXT_POSTPROCESSORS
-
+import re
 
 @TEXT_POSTPROCESSORS.register_module('general')
 def general_postprocess(text: str) -> str:
@@ -284,3 +284,20 @@ def extract_non_reasoning_content(
                                  re.DOTALL)
     non_reasoning_content = reasoning_regex.sub('', text).strip()
     return non_reasoning_content
+
+
+def extract_answers(text):
+    pattern = r'\\boxed(?:\\\\\{|\\\{|\{|\s*)(?:\\text\{)?([A-Za-z, \\\{\}]+?)(?:\}|\\\}|\\\\\}|\\\})'
+    matches = re.findall(pattern, text)
+
+    cleaned_matches = []
+    for match in matches:
+        cleaned = re.sub(r'\\', '', match)
+        cleaned = re.sub(r',', '', cleaned)
+        cleaned = re.sub(r'\s+', '', cleaned)
+        cleaned = re.sub(r'[\{\}]', '', cleaned)
+        cleaned_matches.append(cleaned)
+    if len(cleaned_matches) > 0:
+        return cleaned_matches[0]
+    else:
+        return ""
